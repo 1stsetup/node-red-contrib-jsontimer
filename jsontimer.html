@@ -6,7 +6,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="jsontimer">
-    <p>Use this to set timers to alarm<br/>
+    <p>Use this to set timers to alarm at a specific time<br/>
         Set topic to 'set' to set a timer or 'clear' to clear an existing timer<br>
         Following payload properties can be used:<br>
         <ul>
@@ -24,8 +24,10 @@
             <li>settime: when time was set</li>
             <li>clearedtime: when time was cleared</li>
             <li>alarm: when timer triggered</li>
-        </ul>
-        Id property will contain id of timer.
+            <li>error: when an error occured during setting of timer</li>
+        </ul><BR>
+        Id property will contain id of timer.<br>
+        Error property will contain error text.
     </p>
 
 </script>

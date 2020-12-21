@@ -23,7 +23,7 @@ module.exports = function (RED) {
 
 		node.updateStatus = function() {
 			let count = -1;
-			for (var address in node.devices) {
+			for (var idx in node.timers) {
 				count++;
 			}
 
@@ -42,13 +42,15 @@ module.exports = function (RED) {
                     id: timerId
                 })
                 node.clearTimer(timerId);
+                node.lastAlarmId = timerId;
+                node.updateStatus();
             }
         }
 
         this.clearTimer = function(timerId, send) {
             if (node.timers[timerId] && node.timers[timerId].timeout) {
                 clearTimeout(node.timers[timerId].timeout);
-                delete node.timers[timerId].timeout
+                delete node.timers[timerId]
                 if (send) {
                     send({
                         topic: "clearedtimer",
@@ -60,7 +62,7 @@ module.exports = function (RED) {
         }
         
         function prependStr(inStr, len, prependChar) {
-            let result = inStr;
+            let result = inStr+"";
             while (result.length < len) {
                 result = prependChar + result;
             }
@@ -68,7 +70,15 @@ module.exports = function (RED) {
         }
 
         this.setTimer = function(payload, send) {
-            if (!payload["id"]) return;
+            if (!payload["id"]) {
+                if (send) {
+                    send({
+                        topic:"error",
+                        error:"id missing"
+                    })
+                }
+                return;
+            }
 
             // Payload can have either on of two properties:
             //   - time object. This object specifies a time in the future when this timer should alarm
@@ -77,19 +87,20 @@ module.exports = function (RED) {
             // Timeout property can have following properties {hour, minutes, seconds, milliseconds}
             let timeoutTime;
             if (payload["time"] && typeof payload.time == "object") {
+                node.log("set command with time");
+                let hoursFuture = 0;
+                let minutesFuture = 0;
+                let secondsFuture = 0;
+                let millisecondsFuture = 0;
                 for(var idx in payload.time) {
-                    let hourFuture = 0;
-                    let minutesFuture = 0;
-                    let secondsFuture = 0;
-                    let millisecondsFuture = 0;
                     switch (idx) {
-                        case "hours": hourFuture = payload.time[idx]; break;
-                        case "minutes": minutesFuture = payload.time[idx]; break;
-                        case "seconds": secondsFuture = payload.time[idx]; break;
-                        case "milliseconds": millisecondsFuture = payload.time[idx]; break;
+                        case "hours": hoursFuture = payload.time[idx]*1; break;
+                        case "minutes": minutesFuture = payload.time[idx]*1; break;
+                        case "seconds": secondsFuture = payload.time[idx]*1; break;
+                        case "milliseconds": millisecondsFuture = payload.time[idx]*1; break;
                     }
                 }
-                let futureStr = prependStr(hourFuture,2,"0")+prependStr(minutesFuture,2,"0")+prependStr(secondsFuture,2,"0")+prependStr(millisecondsFuture,3,"0");
+                let futureStr = prependStr(hoursFuture,2,"0")+prependStr(minutesFuture,2,"0")+prependStr(secondsFuture,2,"0")+prependStr(millisecondsFuture,3,"0");
 
                 let now = new Date();
                 let hoursNow = now.getHours();
@@ -100,14 +111,20 @@ module.exports = function (RED) {
                 // See if new time is before old time. So next day.
                 if (futureStr > nowStr) {
                     // today
-                    timeoutTime += (hourFuture - hoursNow) * HOUR_TO_MILLISECONDS;
+                    node.log("Today alarm.")
+                    node.log("futureStr:"+futureStr);
+                    node.log("nowStr:"+nowStr);
+                    timeoutTime = (hoursFuture - hoursNow) * HOUR_TO_MILLISECONDS;
                     timeoutTime += (minutesFuture - minutesNow) * MINUTE_TO_MILLISECONDS;
                     timeoutTime += (secondsFuture - secondsNow) * 1000;
                     timeoutTime += millisecondsFuture - millisecondsNow;
                 }
                 else {
                     //tomorrow
-                    timeoutTime = (hourFuture * HOUR_TO_MILLISECONDS);
+                    node.log("Tomorrow alarm.")
+                    node.log("futureStr:"+futureStr);
+                    node.log("nowStr:"+nowStr);
+                    timeoutTime = (hoursFuture * HOUR_TO_MILLISECONDS);
                     timeoutTime += (minutesFuture * MINUTE_TO_MILLISECONDS);
                     timeoutTime += (secondsFuture * 1000);
                     timeoutTime += millisecondsFuture;
@@ -120,6 +137,7 @@ module.exports = function (RED) {
             }
             else {
                 if (payload["timeout"] && ((typeof payload.timeout == "string") || (typeof payload.timeout == "number") )) {
+                    node.log("set command with timeout:"+typeof payload.timeout);
                     timeoutTime = payload.timeout * 1;
                 }
             }
@@ -137,6 +155,15 @@ module.exports = function (RED) {
                 }
                 node.updateStatus();
             }
+            else {
+                if (send) {
+                    send({
+                        topic: "error",
+                        id: payload.id,
+                        error: "No time or timeout specified"
+                    })
+                }
+            }
         }
         
 		/* ===== Node-Red events ===== */
@@ -146,11 +173,13 @@ module.exports = function (RED) {
             node.log("Msg for cul-max-jsontimer:"+JSON.stringify(msg));
             switch (msg.topic) {
                 case "set": {
+                    node.log("set command");
                     node.clearTimer(msg.payload.id, send);
                     node.setTimer(msg.payload, send);
                     break;
                 }
                 case "clear": {
+                    node.log("clear command id:"+msg.payload.id);
                     node.clearTimer(msg.payload.id, send);
                     break;
                 }
