@@ -2,11 +2,13 @@ Use this to set timers to alarm at a specific time
 
 <b>Input</b>
 
-Set topic to 'set' to set a timer or 'clear' to clear an existing timer
+Set topic to 'set' to set a timer or 'clear' to clear an existing timer  or 'list' to list all timers.
+
 Following payload properties can be used:
 
 * id: Specify the id for the timer. Can be used to clear it and will be set on events.
-* timeout: A timeout value in milliseconds
+* timeout: A relative timeout value in milliseconds when timer should trigger.
+* datetime: An absolute unixtimestamp in milliseconds when timer should trigger.
 * time: An object with following properties
 
     * hours: hour value of time to trigger the timer. Default 0
@@ -18,13 +20,16 @@ Following payload properties can be used:
 
 <b>Events</b>
 
-Topic will contain one of following values:
+Topic property will contain one of following values:
 * settime: when time was set
 * clearedtime: when time was cleared
+* list: will contain a property 'timers' which is an array with each timer currently active
 * alarm: when timer triggered
 * error: when an error occured during setting of timer
 
 Id property will contain id of timer.<br>
+datetime property will contain unixtime in milliseconds when timer will alert.<br>
+datetimeStr property will contain date and time in readable format when timer will alert.<br>
 Error property will contain error text.
 
 

@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-jsontimer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A timer node for node-red which can be controled with messages",
   "main": "cul.js",
   "scripts": {
