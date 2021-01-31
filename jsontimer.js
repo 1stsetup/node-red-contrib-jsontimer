@@ -41,11 +41,14 @@ module.exports = function (RED) {
 
         this.alarm = function(timerId, alarmPayload) {
             if (node.timers[timerId]) {
-                node.send({
+                let msg = {
                     topic:"alarm",
-                    id: timerId,
-                    payload: alarmPayload
-                })
+                    id: timerId
+                }
+                if (alarmPayload !== undefined) {
+                    msg.alarmPayload = alarmPayload;
+                }
+                node.send(msg)
                 node.clearTimer(timerId);
                 node.lastAlarmId = timerId;
                 node.updateStatus();
@@ -164,16 +167,22 @@ module.exports = function (RED) {
                 let dateTime = Date.now() + timeoutTime;
                 node.timers[payload.id] = {
                     timeoutHandle: setTimeout(node.alarm, timeoutTime, payload.id, payload.alarmPayload),
-                    datetime: dateTime,
-                    alarmPayload: payload.alarmPayload
+                    datetime: dateTime
+                }
+                if (payload.hasOwnProperty("alarmPayload") && payload.alarmPayload !== undefined) {
+                    node.timers[payload.id].alarmPayload = payload.alarmPayload;
                 }
                 if (send) {
-                    send({
+                    let msg = {
                         topic:"settimer",
                         id: payload.id,
                         timeout: timeoutTime,
                         datetime: (new Date(dateTime)).toString()
-                    })
+                    };
+                    if (payload.hasOwnProperty("alarmPayload") && payload.alarmPayload !== undefined) {
+                        msg.alarmPayload = payload.alarmPayload;
+                    }
+                    send(msg)
                 }
                 node.updateStatus();
                 node.saveTimers();
@@ -194,11 +203,14 @@ module.exports = function (RED) {
 			for(var idx in data) {
                 if (idx != "getKeyByValue") {
                     count++;
-                    node.setTimer({
+                    let msg = {
                         id: idx,
-                        datetime: data[idx].datetime,
-                        alarmPayload: data[idx].alarmPayload
-                    });
+                        datetime: data[idx].datetime
+                    };
+                    if (data[idx].hasOwnProperty("alarmPayload") && data[idx].alarmPayload !== undefined) {
+                        msg.alarmPayload = data[idx].alarmPayload;
+                    }
+                    node.setTimer(msg);
                 }
             }
             if (count == 0) {
@@ -214,8 +226,10 @@ module.exports = function (RED) {
             for(var idx in node.timers) {
                 if (idx != "getKeyByValue") {
                     newTimers[idx] = {
-                        datetime: node.timers[idx].datetime,
-                        alarmPayload: node.timers[idx].alarmPayload
+                        datetime: node.timers[idx].datetime
+                    }
+                    if (node.timers[idx].hasOwnProperty("alarmPayload") && node.timers[idx].alarmPayload !== undefined) {
+                        newTimers[idx].alarmPayload = node.timers[idx].alarmPayload;
                     }
                 }
             }
@@ -270,12 +284,15 @@ module.exports = function (RED) {
                     let newList = [];
                     for(var idx in node.timers) {
                         if (idx != "getKeyByValue") {
-                            newList.push({
+                            let msg = {
                                 id:idx,
                                 datetime: node.timers[idx].datetime,
-                                dateTimeStr: (new Date(node.timers[idx].datetime)).toString(),
-                                alarmPayload: node.timers[idx].alarmPayload
-                            });
+                                dateTimeStr: (new Date(node.timers[idx].datetime)).toString()
+                            };
+                            if (node.timers[idx].hasOwnProperty("alarmPayload") && node.timers[idx].alarmPayload !== undefined) {
+                                msg.alarmPayload = node.timers[idx].alarmPayload;
+                            }
+                            newList.push(msg);
                         }
                     }
                             
