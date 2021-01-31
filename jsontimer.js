@@ -19,6 +19,29 @@ module.exports = function (RED) {
 		var node = this;
 
         this.timers = {};
+        this.timersArray = function() {
+            let newList = [];
+            for(var idx in node.timers) {
+                if (idx != "getKeyByValue") {
+                    let msg = {
+                        id:idx,
+                        datetime: node.timers[idx].datetime,
+                        dateTimeStr: (new Date(node.timers[idx].datetime)).toString()
+                    };
+                    if (node.timers[idx].hasOwnProperty("alarmPayload") && node.timers[idx].alarmPayload !== undefined) {
+                        msg.alarmPayload = node.timers[idx].alarmPayload;
+                    }
+                    newList.push(msg);
+                }
+            }
+
+            return newList.sort((a,b) => {
+                if (a.datetime < b.datetime) return -1;
+                if (a.datetime > b.datetime) return 1;
+                return 0;
+            });
+        }
+
         this.lastAlarmId;
 
         node.savedFileName = `saved_jsontimers_${node.name != "" ? node.name : node.id}.json`;
@@ -26,15 +49,17 @@ module.exports = function (RED) {
         node.log("node.savedFileName:"+node.savedFileName);
 
 		node.updateStatus = function() {
-			let count = -1;
+			let count = 0;
 			for (var idx in node.timers) {
-				count++;
+                if (idx !== "getKeyByValue"){
+                    count++;
+                }
 			}
 
 			node.status({
 				fill: "green",
 				shape: "dot",
-				text: `${count} timers. ${node.lastAlarmId ? "Last alarm:"+node.lastAlarmId : ""}`
+				text: `${count} timer${count > 1 ? "s" : ""}. ${node.lastAlarmId ? " Last alarm:"+node.lastAlarmId+"." : ""} ${count > 0 ? " Next alarm: \""+node.timersArray()[0].id+"\" - "+node.timersArray()[0].dateTimeStr : ""}`
 			});
 
 		}
@@ -281,25 +306,10 @@ module.exports = function (RED) {
                     break;
                 }
                 case "list": {
-                    let newList = [];
-                    for(var idx in node.timers) {
-                        if (idx != "getKeyByValue") {
-                            let msg = {
-                                id:idx,
-                                datetime: node.timers[idx].datetime,
-                                dateTimeStr: (new Date(node.timers[idx].datetime)).toString()
-                            };
-                            if (node.timers[idx].hasOwnProperty("alarmPayload") && node.timers[idx].alarmPayload !== undefined) {
-                                msg.alarmPayload = node.timers[idx].alarmPayload;
-                            }
-                            newList.push(msg);
-                        }
-                    }
-                            
                     if (send) {
                         send({
                             topic: "list",
-                            timers: newList
+                            timers: node.timersArray()
                         });
                     }
                 }
