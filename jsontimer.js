@@ -66,12 +66,12 @@ module.exports = function (RED) {
 
         this.alarm = function(timerId, alarmPayload) {
             if (node.timers[timerId]) {
-                let msg = {
+                let msg = [{
                     topic:"alarm",
                     id: timerId
-                }
+                }];
                 if (alarmPayload !== undefined) {
-                    msg.alarmPayload = alarmPayload;
+                    msg.push(alarmPayload);
                 }
                 node.send(msg)
                 node.clearTimer(timerId);
@@ -85,10 +85,10 @@ module.exports = function (RED) {
                 clearTimeout(node.timers[timerId].timeoutHandle);
                 delete node.timers[timerId]
                 if (send) {
-                    send({
+                    send([{
                         topic: "clearedtimer",
                         id: timerId
-                    })
+                    }])
                 }
                 node.updateStatus();
                 if (doSave) {
@@ -108,10 +108,10 @@ module.exports = function (RED) {
         this.setTimer = function(payload, send) {
             if (!payload["id"]) {
                 if (send) {
-                    send({
+                    send([{
                         topic:"error",
                         error:"id missing"
-                    })
+                    }])
                 }
                 return;
             }
@@ -207,18 +207,18 @@ module.exports = function (RED) {
                     if (payload.hasOwnProperty("alarmPayload") && payload.alarmPayload !== undefined) {
                         msg.alarmPayload = payload.alarmPayload;
                     }
-                    send(msg)
+                    send([msg])
                 }
                 node.updateStatus();
                 node.saveTimers();
             }
             else {
                 if (send) {
-                    send({
+                    send([{
                         topic: "error",
                         id: payload.id,
                         error: errorStr ? errorStr : "No time or timeout specified"
-                    })
+                    }])
                 }
             }
         }
@@ -307,10 +307,10 @@ module.exports = function (RED) {
                 }
                 case "list": {
                     if (send) {
-                        send({
+                        send([{
                             topic: "list",
                             timers: node.timersArray()
-                        });
+                        }]);
                     }
                 }
             }
