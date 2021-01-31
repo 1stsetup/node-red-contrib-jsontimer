@@ -39,11 +39,12 @@ module.exports = function (RED) {
 
 		}
 
-        this.alarm = function(timerId) {
+        this.alarm = function(timerId, alarmPayload) {
             if (node.timers[timerId]) {
                 node.send({
                     topic:"alarm",
-                    id: timerId
+                    id: timerId,
+                    payload: alarmPayload
                 })
                 node.clearTimer(timerId);
                 node.lastAlarmId = timerId;
@@ -162,8 +163,9 @@ module.exports = function (RED) {
             if (timeoutTime !== undefined) {
                 let dateTime = Date.now() + timeoutTime;
                 node.timers[payload.id] = {
-                    timeoutHandle: setTimeout(node.alarm, timeoutTime, payload.id),
-                    datetime: dateTime
+                    timeoutHandle: setTimeout(node.alarm, timeoutTime, payload.id, payload.alarmPayload),
+                    datetime: dateTime,
+                    alarmPayload: payload.alarmPayload
                 }
                 if (send) {
                     send({
@@ -194,7 +196,8 @@ module.exports = function (RED) {
                     count++;
                     node.setTimer({
                         id: idx,
-                        datetime: data[idx].datetime
+                        datetime: data[idx].datetime,
+                        alarmPayload: data[idx].alarmPayload
                     });
                 }
             }
@@ -211,7 +214,8 @@ module.exports = function (RED) {
             for(var idx in node.timers) {
                 if (idx != "getKeyByValue") {
                     newTimers[idx] = {
-                        datetime: node.timers[idx].datetime
+                        datetime: node.timers[idx].datetime,
+                        alarmPayload: node.timers[idx].alarmPayload
                     }
                 }
             }
@@ -269,7 +273,8 @@ module.exports = function (RED) {
                             newList.push({
                                 id:idx,
                                 datetime: node.timers[idx].datetime,
-                                dateTimeStr: (new Date(node.timers[idx].datetime)).toString()
+                                dateTimeStr: (new Date(node.timers[idx].datetime)).toString(),
+                                alarmPayload: node.timers[idx].alarmPayload
                             });
                         }
                     }

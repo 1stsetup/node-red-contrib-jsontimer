@@ -12,16 +12,21 @@
                 Following payload properties can be used:<br>
                 <ul>
                     <li>id: Specify the id for the timer. Can be used to clear it and will be set on events.</li>
-                    <li>timeout: A relative timeout value in milliseconds when timer should trigger</li>
-                    <li>datetime: An absolute unixtimestamp in milliseconds when timer should trigger.</li>
-                    <li>time: An object with following properties<BR>
-                    <ul>
-                        <li>hours: hour value of time to trigger the timer. Default 0</li>
-                        <li>minutes: minute value of time to trigger the timer. Default 0</li>
-                        <li>seconds: second value of time to trigger the timer. Default 0</li>
-                        <li>milliseconds: millisecond value of time to trigge the timer. Default 0</li>
-                    </ul>
-                        e.g.: For 22:13:36.010 specifiy { "hours": 22, "minutes":13, "seconds":36, "milliseconds": 10}</li>
+                    <li>One of following time settings:
+                        <ul>
+                            <li>timeout: A relative timeout value in milliseconds when timer should trigger</li>
+                            <li>datetime: An absolute unixtimestamp in milliseconds when timer should trigger.</li>
+                            <li>time: An absolute timer object with following properties<BR>
+                            <ul>
+                                <li>hours: hour value of time to trigger the timer. Default 0</li>
+                                <li>minutes: minute value of time to trigger the timer. Default 0</li>
+                                <li>seconds: second value of time to trigger the timer. Default 0</li>
+                                <li>milliseconds: millisecond value of time to trigge the timer. Default 0</li>
+                            </ul>
+                                e.g.: For 22:13:36.010 specifiy { "hours": 22, "minutes":13, "seconds":36, "milliseconds": 10}</li>
+                        </ul>
+                    </li>
+                    <li>alarmPayload: Specify the payload for the alarm event.</li>
                 </ul>
                 <b>Events</b><BR>
                 Topic property will contain one of following values:<BR>
@@ -29,13 +34,9 @@
                     <li>settime: when time was set</li>
                     <li>clearedtime: when time was cleared</li>
                     <li>list: will contain a property 'timers' which is an array with each timer currently active.</li>
-                    <li>alarm: when timer triggered</li>
+                    <li>alarm: when timer triggered. Payload will contain 'alarmPayload' property of set input.</li>
                     <li>error: when an error occured during setting of timer</li>
                 </ul>
-                Id property will contain id of timer.<br>
-                datetime property will contain unixtime in milliseconds when timer will alert.<br>
-                datetimeStr property will contain date and time in readable format when timer will alert.<br>
-                Error property will contain error text.
             </p>
 
 </script>

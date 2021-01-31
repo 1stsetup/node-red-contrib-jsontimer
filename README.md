@@ -7,16 +7,18 @@ Set topic to 'set' to set a timer or 'clear' to clear an existing timer  or 'lis
 Following payload properties can be used:
 
 * id: Specify the id for the timer. Can be used to clear it and will be set on events.
-* timeout: A relative timeout value in milliseconds when timer should trigger.
-* datetime: An absolute unixtimestamp in milliseconds when timer should trigger.
-* time: An object with following properties
+* One of following time settings: 
+    * timeout: A relative timeout value in milliseconds when timer should trigger.
+    * datetime: An absolute unixtimestamp in milliseconds when timer should trigger.
+    * time: An absolute timer object with following properties.
 
-    * hours: hour value of time to trigger the timer. Default 0
-    * minutes: minute value of time to trigger the timer. Default 0
-    * seconds: second value of time to trigger the timer. Default 0
-    * milliseconds: millisecond value of time to trigge the timer. Default 0
+        * hours: hour value of time to trigger the timer. Default 0
+        * minutes: minute value of time to trigger the timer. Default 0
+        * seconds: second value of time to trigger the timer. Default 0
+        * milliseconds: millisecond value of time to trigge the timer. Default 0
 
-        e.g.: For 22:13:36.010 specifiy { "hours": 22, "minutes":13, "seconds":36, "milliseconds": 10}
+            e.g.: For 22:13:36.010 specifiy { "hours": 22, "minutes":13, "seconds":36, "milliseconds": 10}
+* alarmPayload: Specify the payload for the alarm event.
 
 <b>Events</b>
 
@@ -26,12 +28,6 @@ Topic property will contain one of following values:
 * list: will contain a property 'timers' which is an array with each timer currently active
 * alarm: when timer triggered
 * error: when an error occured during setting of timer
-
-Id property will contain id of timer.<br>
-datetime property will contain unixtime in milliseconds when timer will alert.<br>
-datetimeStr property will contain date and time in readable format when timer will alert.<br>
-Error property will contain error text.
-
 
 Example flow:
 ```json
