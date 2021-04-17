@@ -3,10 +3,24 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-row">
+        Default locale settings:(see <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleString">toLocaleString</a>)<BR>
+        <label for="node-input-locale"><i class="icon-tag"></i> Locale</label>
+        <input type="text" id="node-input-locale" placeholder="locale"><BR>
+        <label for="node-input-localeOptions"><i class="icon-tag"></i> Locale options</label>
+        <input type="text" id="node-input-localeOptions" placeholder="localeOptions">
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="jsontimer">
     <p>Use this to set timers to alarm at a specific time<br/>
+        This node has following properties:<br/>
+        <ul>
+            <li>name: The name of the node</li>
+            <li>locale: This is the default locale to use for to the "localeDateTime" output propterty. (see <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleString">toLocaleString</a>)</li>
+            <li>localeOptions: This is the locale options object to use for to the "localeDateTime" output propterty. (see <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleString">toLocaleString</a>)</li>
+        </ul>
+        <BR/>
         <b>Input</b><br>
                 Set topic to 'set' to set a timer or 'clear' to clear an existing timer or 'list' to list all timers<br>
                 Following payload properties can be used:<br>
@@ -26,6 +40,8 @@
                                 e.g.: For 22:13:36.010 specifiy { "hours": 22, "minutes":13, "seconds":36, "milliseconds": 10}</li>
                         </ul>
                     </li>
+                    <li>locale: Specify a locale to use to add a "localeDateTime" propterty to the output. It will override the default. (see <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleString">toLocaleString</a>)</li>
+                    <li>localeOptions: Specify options object for locale to use to add a "localeDateTime" propterty to the output. It will override the default. (see <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleString">toLocaleString</a>)</li>
                     <li>alarmPayload: Specify the payload for the alarm event.</li>
                 </ul>
                 <b>Events</b><BR>
@@ -42,17 +58,27 @@
 </script>
 
 <script type="text/javascript">
+    
+
     RED.nodes.registerType('jsontimer', {
         category: 'timers',
         color: '#ffffff',
         defaults: {
-            name: {value: ""}
+            name: {value: ""},
+            locale: {value: ""},
+            localeOptions: { value: {} }
         },
         inputs: 1,
         outputs: 2,
         outputLabels: ["events","alarmPayload"],
         label: function () {
             return (this.groupaddr || this.name || "jsontimer");
+        },
+        oneditprepare: function() {
+            $("#node-input-localeOptions").typedInput({
+                type:"json",
+                types:["json"]
+            });
         }
     });
 </script>

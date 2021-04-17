@@ -16,6 +16,11 @@ module.exports = function (RED) {
     function CULJsonTimerNode(config) {
 		RED.nodes.createNode(this, config);
 		this.name = config.name;
+        this.locale = config.locale != "" ? config.locale : undefined;
+        this.localeOptions = config.localeOptions != "" ? config.localeOptions : undefined;
+
+        console.log("locale:"+this.locale);
+        console.log("localeOptions:"+this.localeOptions);
 		var node = this;
 
         this.timers = {};
@@ -26,10 +31,30 @@ module.exports = function (RED) {
                     let msg = {
                         id:idx,
                         datetime: node.timers[idx].datetime,
-                        dateTimeStr: (new Date(node.timers[idx].datetime)).toString()
+                        dateTimeStr: (new Date(node.timers[idx].datetime)).toString(),
+                        localeDateTime: (new Date(node.timers[idx].datetime)).toLocaleString(
+                            node.timers[idx].locale ? node.timers[idx].locale : node.locale, 
+                            node.timers[idx].locale ? (node.timers[idx].localeOptions ? node.timers[idx].localeOptions : (node.locale ? node.localeOptions : undefined)) : (node.locale ? node.localeOptions : undefined)
+                        )
                     };
                     if (node.timers[idx].hasOwnProperty("alarmPayload") && node.timers[idx].alarmPayload !== undefined) {
                         msg.alarmPayload = node.timers[idx].alarmPayload;
+                    }
+                    if (node.timers[idx].hasOwnProperty("locale") && node.timers[idx].locale !== undefined) {
+                        msg.locale = node.timers[idx].locale;
+                    }
+                    else {
+                        if (node.locale !== undefined) {
+                            msg.locale = node.locale;
+                        }
+                    }
+                    if (node.timers[idx].hasOwnProperty("localeOptions") && node.timers[idx].localeOptions !== undefined) {
+                        msg.localeOptions = node.timers[idx].localeOptions;
+                    }
+                    else {
+                        if (node.localeOptions !== undefined) {
+                            msg.localeOptions = node.localeOptions;
+                        }
                     }
                     newList.push(msg);
                 }
@@ -197,15 +222,41 @@ module.exports = function (RED) {
                 if (payload.hasOwnProperty("alarmPayload") && payload.alarmPayload !== undefined) {
                     node.timers[payload.id].alarmPayload = payload.alarmPayload;
                 }
+                if (payload.hasOwnProperty("locale") && payload.locale !== undefined) {
+                    node.timers[payload.id].locale = payload.locale;
+                }
+                if (payload.hasOwnProperty("localeOptions") && payload.localeOptions !== undefined) {
+                    node.timers[payload.id].localeOptions = payload.localeOptions;
+                }
                 if (send) {
                     let msg = {
                         topic:"settimer",
                         id: payload.id,
                         timeout: timeoutTime,
-                        datetime: (new Date(dateTime)).toString()
+                        datetime: (new Date(dateTime)).toString(),
+                        localeDateTime: (new Date(dateTime)).toLocaleString(
+                            node.timers[payload.id].locale ? node.timers[payload.id].locale : node.locale, 
+                            node.timers[payload.id].locale ? (node.timers[payload.id].localeOptions ? node.timers[payload.id].localeOptions : (node.locale ? node.localeOptions : undefined)) : (node.locale ? node.localeOptions : undefined)
+                        )
                     };
                     if (payload.hasOwnProperty("alarmPayload") && payload.alarmPayload !== undefined) {
                         msg.alarmPayload = payload.alarmPayload;
+                    }
+                    if (payload.hasOwnProperty("locale") && payload.locale !== undefined) {
+                        msg.locale = payload.locale;
+                    }
+                    else {
+                        if (node.locale !== undefined) {
+                            msg.locale = node.locale;
+                        }
+                    }
+                    if (payload.hasOwnProperty("localeOptions") && payload.localeOptions !== undefined) {
+                        msg.localeOptions = payload.localeOptions;
+                    }
+                    else {
+                        if (node.localeOptions !== undefined) {
+                            msg.localeOptions = node.localeOptions;
+                        }
                     }
                     send([msg])
                 }
@@ -235,6 +286,12 @@ module.exports = function (RED) {
                     if (data[idx].hasOwnProperty("alarmPayload") && data[idx].alarmPayload !== undefined) {
                         msg.alarmPayload = data[idx].alarmPayload;
                     }
+                    if (data[idx].hasOwnProperty("locale") && data[idx].locale !== undefined) {
+                        msg.locale = data[idx].locale;
+                    }
+                    if (data[idx].hasOwnProperty("localeOptions") && data[idx].localeOptions !== undefined) {
+                        msg.localeOptions = data[idx].localeOptions;
+                    }
                     node.setTimer(msg);
                 }
             }
@@ -255,6 +312,12 @@ module.exports = function (RED) {
                     }
                     if (node.timers[idx].hasOwnProperty("alarmPayload") && node.timers[idx].alarmPayload !== undefined) {
                         newTimers[idx].alarmPayload = node.timers[idx].alarmPayload;
+                    }
+                    if (node.timers[idx].hasOwnProperty("locale") && node.timers[idx].locale !== undefined) {
+                        newTimers[idx].locale = node.timers[idx].locale;
+                    }
+                    if (node.timers[idx].hasOwnProperty("localeOptions") && node.timers[idx].localeOptions !== undefined) {
+                        newTimers[idx].localeOptions = node.timers[idx].localeOptions;
                     }
                 }
             }
